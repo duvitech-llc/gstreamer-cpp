@@ -12,9 +12,9 @@ make
 g++ -Wall -g -c ../src/main.cpp -I../include `pkg-config --cflags --libs gstreamer-1.0`
 
 // Link library to demo program to make an executable
-g++ -Wall -Wl,-rpath,. -o main main.o libGSTTestApp.so  `pkg-config --libs gstreamer-1.0 gstreamer-app-1.0`
+g++ -Wall -Wl,-rpath,. -o main main.o libGSTPipelineApp.so  `pkg-config --libs gstreamer-1.0 gstreamer-app-1.0`
 
 // run executable
 ./main
 
-```
+``` 

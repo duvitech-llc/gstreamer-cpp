@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9.0)
-project(GSTTestApp)
+project(GSTPipelineApp)
 
 find_package(PkgConfig REQUIRED)
 
@@ -23,14 +23,14 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(DRIVER_DIR_SRC                 src)
 set(DRIVER_DIR_INC                 include)
-set(DRIVER_TEMPLATE_TARGET_NAME    "GSTTestApp")
+set(DRIVER_TEMPLATE_TARGET_NAME    "GSTPipelineApp")
 
 include_directories(
   ${GSTLIBS_INCLUDE_DIRS}
   ${DRIVER_DIR_INC}
 )
 
-set(SOURCE_FILES src/gstTestApp.cxx)
+set(SOURCE_FILES src/gstPipelineApp.cxx)
 
 link_directories(
   ${GSTLIBS_LIBRARY_DIRS}
@@ -48,7 +48,7 @@ link_directories(
 
 add_library(${DRIVER_TEMPLATE_TARGET_NAME}
             SHARED
-            src/gstTestApp.cxx)
+            src/gstPipelineApp.cxx)
 
 target_include_directories(${DRIVER_TEMPLATE_TARGET_NAME}
         PRIVATE

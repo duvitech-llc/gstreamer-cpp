@@ -1,5 +1,5 @@
 #include <iostream>
-#include "gstTestApp.h"
+#include "gstPipelineApp.h"
 #include <unistd.h>
 
 using namespace std;
