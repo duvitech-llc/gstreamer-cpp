@@ -3,6 +3,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
 #include <iostream>
+#include <stdlib.h>
 
 #define SAMPLE_RATE 1
 
@@ -27,24 +28,24 @@ static GstFlowReturn new_sample (GstElement *sink, App *data){
         if(! gst_memory_map(memory, &map_info, GST_MAP_READ)) {            
             printf("Flow Error\r\n");  
         }else{
-            // we have a nv12 buffer here map_info.data map_info.size
-            
-            g_print("Writing nv12 to file\n") ;
-            FILE *write_ptr;
-            write_ptr = fopen("mytest.nv12","wb");  // w for write, b for binary
-            fwrite(map_info.data,1,map_info.size,write_ptr); // write 10 bytes from our buffer
-            fclose(write_ptr); // Close the file
-
+            // we have a nv12 buffer here map_info.data map_info.size            
+            g_print("Update Image\n") ;
+            if(data->updateImage != NULL){
+                data->updateImage(map_info.data, map_info.size);
+            }else{  
+                g_print("Update Image IS NULL\n") ;
+            }
             gst_memory_unmap(memory, &map_info);            
-            g_print("Captured Data\n");  
         }
         gst_memory_unref(memory);
         gst_sample_unref (sample);
         return GST_FLOW_OK;
     }
+        
+    return GST_FLOW_ERROR;
 }
 
-void*  GstreamerThread(void* context) {
+void* GstreamerThread(void* context) {
     g_print("Enter GstreamerThread\n");
     ThreadContext *pctx = (ThreadContext *) context;
     
@@ -138,27 +139,39 @@ void*  GstreamerThread(void* context) {
             }
             gst_message_unref (msg);
         }
-
-        g_print("ImuReadThread entering run loop\n");
-
+        g_print("Pipeline Exiting\n") ;
         /* Free resources */
         gst_object_unref (bus);
         gst_element_set_state (app->pipeline, GST_STATE_NULL);
         gst_object_unref (app->pipeline);
         
         pctx->finished = 0;
-
     }
+
+    pthread_exit(NULL);
+    return NULL;
 }
 
-bool GstreamerTest::StartPipeline(void){
+bool GstreamerPipeline::StartPipeline(void(*fnUpdateImage)(unsigned char *, unsigned long)){
     cout << "Starting Pipeline" << endl;
 
-    int result = 0;
-    
+    // initialize structure    
     App *app = &s_app;
 
-    // start thread
+    app->pipeline = NULL;
+    app->source = NULL;
+    app->infilter = NULL;
+    app->decoder = NULL;
+    app->conv = NULL;
+    app->filter = NULL;
+    app->sink = NULL;
+    app->updateImage = NULL;
+
+    if(fnUpdateImage != NULL){
+        g_print("Assign UpdateImage Function\n");
+        // set update function
+        app->updateImage = fnUpdateImage;
+    }
 
     if(mGstreamerThreadInfo.thread_id == 0){
         pthread_attr_t  threadAttr_;
@@ -181,7 +194,7 @@ bool GstreamerTest::StartPipeline(void){
     return true;
 }
 
-bool GstreamerTest::StopPipeline(void){
+bool GstreamerPipeline::StopPipeline(void){
     cout << "Stoping Pipeline" << endl;
 
     // stop thread
@@ -208,7 +221,7 @@ bool GstreamerTest::StopPipeline(void){
     return true;
 }
 
-bool GstreamerTest::PushBuffer(unsigned char* pData, long length){
+bool GstreamerPipeline::PushBuffer(unsigned char* pData, long length){
     GstFlowReturn ret;
     GstBuffer * jpegBuffer = NULL;
     GstMapInfo map;
@@ -243,11 +256,11 @@ bool GstreamerTest::PushBuffer(unsigned char* pData, long length){
     
 }
 
-bool GstreamerTest::isRunning(void){
+bool GstreamerPipeline::isRunning(void){
     return true;
 }
 
-GstreamerTest::GstreamerTest(void){
+GstreamerPipeline::GstreamerPipeline(void){
     const gchar *nano_str;
     guint major, minor, micro, nano;
     cout << "Object is being created" << endl;
@@ -269,11 +282,11 @@ GstreamerTest::GstreamerTest(void){
     mInitialized = true;
 }
 
-GstreamerTest::~GstreamerTest(void){
+GstreamerPipeline::~GstreamerPipeline(void){
     cout << "Object is being deleted" << endl;
 
     if(mInitialized){
-
+        StopPipeline();
     }
 
 }

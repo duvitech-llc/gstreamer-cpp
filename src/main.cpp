@@ -4,14 +4,25 @@
 
 using namespace std;
 
+void updateImageData(unsigned char * data, unsigned long len ){
+
+   cout << "Writing nv12 to file\n";
+   FILE *write_ptr;
+   write_ptr = fopen("mytest.nv12","wb");  // w for write, b for binary
+   fwrite(data,1,len,write_ptr); // write 10 bytes from our buffer
+   fclose(write_ptr); // Close the file
+  
+   cout<< "Captured Data\n";  
+}
+
 // Main function for the program
 int main() {
    int count = 0;
    unsigned char *data;
    FILE *fileptr;
    long filelen;
-   GstreamerTest test;
-   test.StartPipeline();
+   GstreamerPipeline test;
+   test.StartPipeline(&updateImageData);
    
    while(test.isRunning()){
       usleep(1000000);

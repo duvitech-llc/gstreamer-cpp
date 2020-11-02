@@ -15,6 +15,7 @@ struct _App
   GstElement *conv;
   GstElement *filter;
   GstElement *sink;  
+  void (*updateImage)(unsigned char * data, unsigned long len);
 };
 
 
@@ -25,14 +26,14 @@ typedef struct thread_info {
    int              finished;
 }ThreadContext;
 
-class GstreamerTest
+class GstreamerPipeline
 {
 public:
-    GstreamerTest();
-    ~GstreamerTest();
+    GstreamerPipeline();
+    ~GstreamerPipeline();
 
     bool isRunning(void);
-    bool StartPipeline(void);
+    bool StartPipeline(void(*fnUpdateImage)(unsigned char *, unsigned long));
     bool StopPipeline(void);
     bool PushBuffer(unsigned char* pData, long length); // jpeg buffer
 
